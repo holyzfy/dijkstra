@@ -9,12 +9,55 @@
     height: 400px;
     border: 1px solid #080;
 }
+path {
+    fill: none;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+.cost {
+    fill: #ccc;
+    text-anchor: middle;
+}
+.edge {
+    stroke: #999;
+}
+.route path {
+    stroke: #f00;
+    stroke-opacity: 0.6;
+    stroke-width: 5px;
+}
 </style>
 </head>
 
 <body>
-<div id="graph" class="graph"></div>
+<svg id="graph" class="graph"></svg>
+<div id="demo">
+    The shortest path:
+    <select v-model="start">
+        <option value="a">a</option>
+        <option value="b">b</option>
+        <option value="c">c</option>
+        <option value="d">d</option>
+        <option value="e">e</option>
+        <option value="f">f</option>
+        <option value="g">g</option>
+    </select>
+
+    -&gt;
+
+    <select v-model="end">
+        <option value="a">a</option>
+        <option value="b">b</option>
+        <option value="c">c</option>
+        <option value="d">d</option>
+        <option value="e">e</option>
+        <option value="f">f</option>
+        <option value="g">g</option>
+    </select>
+    cost: {{cost}}
+</div>
 <script src="lib/d3-5.0.0.js"></script>
+<script src="lib/vue-2.5.13.js"></script>
 <script src="dist/bundle.js"></script>
 <script>
 start();

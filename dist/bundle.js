@@ -1,8 +1,24 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 var Graph = require('node-dijkstra');
+var lineGenerator = d3.line(); //.curve(d3.curveCardinal);
 
-function getRoute() {
-    var vertex = {
+function getEdges() {
+    return [
+        ['a', 'b', 7],
+        ['a', 'c', 9],
+        ['a', 'f', 14],
+        ['c', 'd', 11],
+        ['c', 'f', 2],
+        ['b', 'c', 10],
+        ['b', 'd', 15],
+        ['d', 'e', 6],
+        ['e', 'f', 9],
+        ['d', 'g', 3]
+    ];
+}
+
+function getVertex() {
+    return {
         a: {
             x: 46,
             y: 295
@@ -26,19 +42,61 @@ function getRoute() {
         f: {
             x: 70,
             y: 67
+        },
+        g: {
+            x: 514,
+            y: 345
         }
     };
-    var edges = [
-        ['a', 'b', 7],
-        ['a', 'c', 9],
-        ['a', 'f', 14],
-        ['c', 'd', 11],
-        ['c', 'f', 2],
-        ['b', 'c', 10],
-        ['b', 'd', 15],
-        ['d', 'e', 6],
-        ['e', 'f', 9]
-    ];
+}
+
+function draw(edges, vertex, elem) {
+    edges.forEach(item => {
+        var start = item[0];
+        var end = item[1];
+        item[3] = vertex[start];
+        item[4] = vertex[end];
+        return item;
+    });
+    var svg = d3.select('#graph');
+    var gEdge = svg.append('g').selectAll('.edge')
+        .data(edges)
+        .enter();
+        gEdge.append('path')
+            .classed('edge', true)
+            .attr('d', d => {
+                return lineGenerator([
+                    [d[3].x, d[3].y],
+                    [d[4].x, d[4].y]
+                ]);
+            });
+        gEdge.append('text')
+            .classed('cost', true)
+            .text(d => d[2])
+            .attr('x', d => {
+                return (d[3].x + d[4].x) / 2;
+            })
+            .attr('y', d => {
+                return (d[3].y + d[4].y) / 2;
+            });
+
+    svg.append('g').classed('route', true);
+
+    var gVertex = svg.append('g').selectAll('.vertex')
+        .data(d3.entries(vertex))
+        .enter().append('g')
+            .classed('vertex', true)
+            .attr('transform', d => `translate(${d.value.x}, ${d.value.y})`);
+
+    gVertex.selectAll('text')
+        .data(d => d.key)
+        .enter().append('text')
+            .text(d => d);
+    return svg;
+}
+
+function getRoute() {
+    var edges = getEdges();
     var reverseEdges = edges.map(function (item) {
         return [item[1], item[0], item[2]];
     });
@@ -52,10 +110,44 @@ function getRoute() {
     return new Graph(nodes);
 }
 
+function drawRoute(svg, path, vertex) {
+    var gRoute = svg.select('.route');
+    if(!path) {
+        return gRoute.html('');
+    }
+    var points = path.map(item => [vertex[item].x, vertex[item].y]);
+    var pathData = lineGenerator(points);
+    gRoute.html('').append('path').attr('d', pathData);
+}
+
 window.start = function () {
+    var svg = draw(getEdges(), getVertex(), '#graph');
     var route = getRoute();
-    var ret = route.path('d', 'a', { cost: true });
-    console.log(ret);
+
+    new Vue({
+        el: '#demo',
+        data: {
+            start: '',
+            end: '',
+            cost: 0
+        },
+        computed: {
+            path: function () {
+                return this.start + this.end;
+            }
+        },
+        watch: {
+            path: function () {
+                var ret = route.path(this.start, this.end, { cost: true });
+                this.cost = ret.cost;
+                drawRoute(svg, ret.path, getVertex());
+            }
+        },
+        mounted: function () {
+            this.start = 'a';
+            this.end = 'e';
+        }
+    })
 };
 },{"node-dijkstra":2}],2:[function(require,module,exports){
 const Queue = require('./PriorityQueue');
