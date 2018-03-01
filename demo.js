@@ -138,6 +138,9 @@ function initMap(svg) {
 function drawRoute(svg, path) {
     var els = Array.from(svg.querySelectorAll('.edge-selected'));
     els.forEach(el => el.classList.remove('edge-selected'));
+    if(!path) {
+        return;
+    }
     var idList = [];
     for(var i = 1; i < path.length; i++) {
         var [start, end] = [path[i - 1], path[i]];

@@ -129,6 +129,9 @@ function drawRoute(svg, path) {
     els.forEach(function (el) {
         return el.classList.remove('edge-selected');
     });
+    if (!path) {
+        return;
+    }
     var idList = [];
     for (var i = 1; i < path.length; i++) {
         var _ref = [path[i - 1], path[i]],
